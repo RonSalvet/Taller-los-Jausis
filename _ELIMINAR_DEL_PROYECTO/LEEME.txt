@@ -1,0 +1,29 @@
+ARCHIVOS Y CARPETAS A ELIMINAR DE TU PROYECTO (mi-proyecto)
+=============================================================
+
+Antes de copiar las migraciones y modelos nuevos, borra esto de tu
+proyecto Laravel para evitar conflictos:
+
+1. CARPETA COMPLETA:
+   modulo-vehiculos/
+   (confirmado: es de otro examen, no pertenece a este proyecto)
+
+2. ESTOS 6 ARCHIVOS DE database/migrations/:
+   2026_07_20_000001_create_clientes_table.php
+   2026_07_20_000002_create_vehiculos_table.php
+   2026_07_20_000003_create_empleados_table.php
+   2026_07_20_000004_create_repuestos_table.php
+   2026_07_20_000005_create_ordenes_servicio_table.php
+   2026_07_20_000006_create_orden_repuesto_table.php
+   (eran del esquema simple anterior, ya no corresponde)
+
+3. ESTOS 6 ARCHIVOS DE app/Models/:
+   Cliente.php
+   Vehiculo.php
+   Empleado.php
+   Repuesto.php
+   OrdenServicio.php
+   (User.php SÍ se queda, es el que trae Laravel por defecto para auth)
+
+Después de borrar estos archivos, copia el contenido de las carpetas
+database/migrations/ y app/Models/ de este paquete dentro de tu proyecto.
