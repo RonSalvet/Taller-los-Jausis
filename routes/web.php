@@ -76,3 +76,30 @@ Route::middleware('auth.usuario')->group(function () {
     Route::delete('/usuarios/{id}',      [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
 });
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/sembrar-datos-2026', function () {
+    $seeders = [
+        'OrdenesCatalogoSeeder',
+        'VehiculoCatalogoSeeder',
+        'ClienteSeeder',
+        'VehiculoSeeder',
+        'OrdenTrabajoSeeder',
+    ];
+
+    $resultado = [];
+
+    foreach ($seeders as $seeder) {
+        try {
+            Artisan::call('db:seed', ['--class' => $seeder, '--force' => true]);
+            $resultado[] = "✅ $seeder ejecutado correctamente.";
+        } catch (\Throwable $e) {
+            $resultado[] = "❌ $seeder falló: " . $e->getMessage();
+        }
+    }
+
+    return '<pre style="font-family: monospace; font-size: 16px;">' .
+        implode("\n", $resultado) .
+        "\n\n⚠️ IMPORTANTE: borra esta ruta de routes/web.php ahora que ya la usaste." .
+        '</pre>';
+});
