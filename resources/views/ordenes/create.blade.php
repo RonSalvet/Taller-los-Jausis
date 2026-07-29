@@ -90,15 +90,27 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Estado</label>
-                    <select name="estado" class="form-select" required>
-                        @foreach (['RECIBIDA', 'EN_PROCESO', 'FINALIZADA', 'ENTREGADA', 'ANULADA'] as $estado)
-                            <option value="{{ $estado }}" {{ old('estado', 'RECIBIDA') == $estado ? 'selected' : '' }}>
-                                {{ $estado }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select" required>
+                            @foreach (['RECIBIDA', 'EN_PROCESO', 'FINALIZADA', 'ENTREGADA', 'ANULADA'] as $estado)
+                                <option value="{{ $estado }}" {{ old('estado', 'RECIBIDA') == $estado ? 'selected' : '' }}>
+                                    {{ $estado }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Resultado del diagnóstico (opcional)</label>
+                        <select name="resultado_diagnostico" class="form-select">
+                            <option value="">-- Aún sin diagnosticar --</option>
+                            <option value="REPARABLE" {{ old('resultado_diagnostico') == 'REPARABLE' ? 'selected' : '' }}>Reparable</option>
+                            <option value="REQUIERE_REPUESTO" {{ old('resultado_diagnostico') == 'REQUIERE_REPUESTO' ? 'selected' : '' }}>Requiere repuesto</option>
+                            <option value="NO_REPARABLE" {{ old('resultado_diagnostico') == 'NO_REPARABLE' ? 'selected' : '' }}>No reparable</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="mb-3">

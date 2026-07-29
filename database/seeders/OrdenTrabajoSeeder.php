@@ -11,15 +11,6 @@ use App\Models\OrdenTrabajo;
 
 class OrdenTrabajoSeeder extends Seeder
 {
-    /**
-     * Crea entre 1 y 3 órdenes de trabajo por cada vehículo existente,
-     * con estados y fechas distribuidas en los últimos 7 meses, para que
-     * el Dashboard (gráfico de dona y de línea) se vea con datos reales.
-     *
-     * IMPORTANTE: requiere haber corrido antes:
-     *   php artisan db:seed --class=OrdenesCatalogoSeeder   (sucursal, usuario, mecánicos)
-     *   php artisan db:seed --class=VehiculoSeeder          (vehículos)
-     */
     public function run(): void
     {
         $vehiculos = Vehiculo::all();
@@ -33,7 +24,11 @@ class OrdenTrabajoSeeder extends Seeder
         }
 
         $estados = ['RECIBIDA', 'EN_PROCESO', 'FINALIZADA', 'ENTREGADA', 'ANULADA'];
-        $pesos   = [20, 25, 25, 25, 5]; // distribución aproximada en porcentaje
+        $pesos   = [20, 25, 25, 25, 5];
+
+        // Resultado de diagnóstico: solo aplica a órdenes que ya avanzaron
+        $resultados = ['REPARABLE', 'REQUIERE_REPUESTO', 'NO_REPARABLE'];
+        $pesosResultado = [55, 30, 15];
 
         $diagnosticos = [
             'Cambio de aceite y filtro',
@@ -54,8 +49,13 @@ class OrdenTrabajoSeeder extends Seeder
             $cantidadOrdenes = random_int(1, 3);
 
             for ($k = 0; $k < $cantidadOrdenes; $k++) {
-                $estado = $this->elegirEstadoAleatorio($estados, $pesos);
+                $estado = $this->elegirAleatorio($estados, $pesos);
                 $fechaIngreso = $inicio->copy()->addDays(random_int(0, 210));
+
+                // Solo las órdenes que ya pasaron por diagnóstico (no RECIBIDA/ANULADA) tienen resultado
+                $resultadoDiagnostico = in_array($estado, ['EN_PROCESO', 'FINALIZADA', 'ENTREGADA'])
+                    ? $this->elegirAleatorio($resultados, $pesosResultado)
+                    : null;
 
                 $orden = OrdenTrabajo::create([
                     'id_cliente'             => $vehiculo->id_cliente,
@@ -66,9 +66,8 @@ class OrdenTrabajoSeeder extends Seeder
                     'fecha_entrega_estimada' => $fechaIngreso->copy()->addDays(random_int(1, 5)),
                     'estado'                 => $estado,
                     'diagnostico'            => $diagnosticos[array_rand($diagnosticos)],
+                    'resultado_diagnostico'  => $resultadoDiagnostico,
                     'observaciones'          => null,
-                    // Total de ejemplo — se calculará automáticamente cuando
-                    // se implemente el detalle de servicios/repuestos por orden.
                     'total'                  => random_int(150, 1800),
                 ]);
 
@@ -79,20 +78,19 @@ class OrdenTrabajoSeeder extends Seeder
         }
     }
 
-    /** Elige un estado al azar respetando los pesos/porcentajes indicados */
-    private function elegirEstadoAleatorio(array $estados, array $pesos): string
+    private function elegirAleatorio(array $opciones, array $pesos): string
     {
         $total = array_sum($pesos);
         $r = random_int(1, $total);
         $acumulado = 0;
 
-        foreach ($estados as $i => $estado) {
+        foreach ($opciones as $i => $opcion) {
             $acumulado += $pesos[$i];
             if ($r <= $acumulado) {
-                return $estado;
+                return $opcion;
             }
         }
 
-        return $estados[0];
+        return $opciones[0];
     }
 }

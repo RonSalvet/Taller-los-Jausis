@@ -13,7 +13,8 @@ class OrdenTrabajo extends Model
 
     protected $fillable = [
         'id_cliente', 'id_vehiculo', 'id_sucursal', 'id_usuario_registro',
-        'fecha_ingreso', 'fecha_entrega_estimada', 'estado', 'diagnostico', 'observaciones', 'total',
+        'fecha_ingreso', 'fecha_entrega_estimada', 'estado',
+        'diagnostico', 'resultado_diagnostico', 'observaciones', 'total',
     ];
 
     public function cliente()

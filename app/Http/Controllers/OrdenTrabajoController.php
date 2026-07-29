@@ -22,13 +22,13 @@ class OrdenTrabajoController extends Controller
             'fecha_entrega_estimada' => 'nullable|date',
             'estado'                 => 'required|in:RECIBIDA,EN_PROCESO,FINALIZADA,ENTREGADA,ANULADA',
             'diagnostico'            => 'nullable|string',
+            'resultado_diagnostico'  => 'nullable|in:REPARABLE,REQUIERE_REPUESTO,NO_REPARABLE',
             'observaciones'          => 'nullable|string',
             'mecanicos'              => 'nullable|array',
             'mecanicos.*'            => 'exists:mecanico,id_mecanico',
         ];
     }
 
-    /** Datos comunes para los <select> de los formularios */
     private function datosFormulario(): array
     {
         return [
@@ -61,8 +61,6 @@ class OrdenTrabajoController extends Controller
         unset($data['mecanicos']);
 
         $orden = OrdenTrabajo::create($data);
-
-        // Asigna los mecánicos seleccionados a la orden (tabla orden_mecanico)
         $orden->mecanicos()->sync($mecanicosSeleccionados);
 
         return redirect()

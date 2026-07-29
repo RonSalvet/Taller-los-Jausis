@@ -11,9 +11,25 @@ class Sucursal extends Model
     public $incrementing = true;
     public $timestamps = false;
 
-    protected $fillable = ['nombre', 'direccion', 'telefono', 'zona'];
+    protected $fillable = ['nombre', 'direccion', 'telefono', 'zona', 'latitud', 'longitud'];
 
-    public function usuarios() { return $this->hasMany(Usuario::class, 'id_sucursal', 'id_sucursal'); }
-    public function mecanicos() { return $this->hasMany(Mecanico::class, 'id_sucursal', 'id_sucursal'); }
-    public function ordenesTrabajo() { return $this->hasMany(OrdenTrabajo::class, 'id_sucursal', 'id_sucursal'); }
+    public function usuarios()
+    {
+        return $this->hasMany(Usuario::class, 'id_sucursal', 'id_sucursal');
+    }
+
+    public function mecanicos()
+    {
+        return $this->hasMany(Mecanico::class, 'id_sucursal', 'id_sucursal');
+    }
+
+    public function ordenesTrabajo()
+    {
+        return $this->hasMany(OrdenTrabajo::class, 'id_sucursal', 'id_sucursal');
+    }
+
+    public function tieneUbicacion(): bool
+    {
+        return $this->latitud !== null && $this->longitud !== null;
+    }
 }

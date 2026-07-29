@@ -8,10 +8,12 @@ use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\OrdenTrabajoController;
 use App\Http\Controllers\RepuestoController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ReporteController;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 |--------------------------------------------------------------------------
-| Rutas web — TallerPro
+| Rutas web — Taller Los Jausis
 |--------------------------------------------------------------------------
 */
 
@@ -75,10 +77,24 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/usuarios/{id}',         [UsuarioController::class, 'update'])->name('usuarios.update');
     Route::delete('/usuarios/{id}',      [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
-});
-use Illuminate\Support\Facades\Artisan;
+    // Reportes
+    Route::get('/reportes',              [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/reparaciones', [ReporteController::class, 'reparaciones'])->name('reportes.reparaciones');
+    Route::get('/reportes/diagnosticos', [ReporteController::class, 'diagnosticos'])->name('reportes.diagnosticos');
 
-Route::get('/sembrar-datos-2026', function () {
+});
+
+
+Route::get('/resembrar-2026', function () {
+    $resultado = [];
+
+    try {
+        Artisan::call('migrate:fresh', ['--force' => true]);
+        $resultado[] = "✅ Base de datos reiniciada (migrate:fresh).";
+    } catch (\Throwable $e) {
+        return '<pre>❌ Error en migrate:fresh: ' . $e->getMessage() . '</pre>';
+    }
+
     $seeders = [
         'OrdenesCatalogoSeeder',
         'VehiculoCatalogoSeeder',
@@ -86,8 +102,6 @@ Route::get('/sembrar-datos-2026', function () {
         'VehiculoSeeder',
         'OrdenTrabajoSeeder',
     ];
-
-    $resultado = [];
 
     foreach ($seeders as $seeder) {
         try {
