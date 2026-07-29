@@ -9,7 +9,7 @@ use App\Http\Controllers\OrdenTrabajoController;
 use App\Http\Controllers\RepuestoController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ReporteController;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\SucursalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Artisan;
 |--------------------------------------------------------------------------
 */
 
-// --- Seguridad: Login / Logout / Recuperación de contraseña (públicas) ---
 Route::get('/login',            [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login',           [AuthController::class, 'login'])->name('login.attempt');
 Route::post('/logout',          [AuthController::class, 'logout'])->name('logout');
@@ -27,17 +26,14 @@ Route::post('/recuperar',           [AuthController::class, 'sendResetLink'])->n
 Route::get('/recuperar/restablecer',[AuthController::class, 'showReset'])->name('password.reset');
 Route::post('/recuperar/restablecer',[AuthController::class, 'resetPassword'])->name('password.update');
 
-// La raíz del sitio: si hay sesión va al dashboard, si no, al login
 Route::get('/', function () {
     return redirect(session('usuario_id') ? route('dashboard.index') : route('login'));
 });
 
-// --- Todo lo demás requiere sesión iniciada ---
 Route::middleware('auth.usuario')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
-    // Clientes
     Route::get('/clientes',              [ClienteController::class, 'index'])->name('clientes.index');
     Route::get('/clientes/crear',        [ClienteController::class, 'create'])->name('clientes.create');
     Route::post('/clientes',             [ClienteController::class, 'store'])->name('clientes.store');
@@ -45,7 +41,6 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/clientes/{id}',         [ClienteController::class, 'update'])->name('clientes.update');
     Route::delete('/clientes/{id}',      [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
-    // Vehículos
     Route::get('/vehiculos',              [VehiculoController::class, 'index'])->name('vehiculos.index');
     Route::get('/vehiculos/crear',        [VehiculoController::class, 'create'])->name('vehiculos.create');
     Route::post('/vehiculos',             [VehiculoController::class, 'store'])->name('vehiculos.store');
@@ -53,7 +48,6 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/vehiculos/{id}',         [VehiculoController::class, 'update'])->name('vehiculos.update');
     Route::delete('/vehiculos/{id}',      [VehiculoController::class, 'destroy'])->name('vehiculos.destroy');
 
-    // Órdenes de Trabajo
     Route::get('/ordenes',              [OrdenTrabajoController::class, 'index'])->name('ordenes.index');
     Route::get('/ordenes/crear',        [OrdenTrabajoController::class, 'create'])->name('ordenes.create');
     Route::post('/ordenes',             [OrdenTrabajoController::class, 'store'])->name('ordenes.store');
@@ -61,7 +55,6 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/ordenes/{id}',         [OrdenTrabajoController::class, 'update'])->name('ordenes.update');
     Route::delete('/ordenes/{id}',      [OrdenTrabajoController::class, 'destroy'])->name('ordenes.destroy');
 
-    // Repuestos / Inventario
     Route::get('/repuestos',              [RepuestoController::class, 'index'])->name('repuestos.index');
     Route::get('/repuestos/crear',        [RepuestoController::class, 'create'])->name('repuestos.create');
     Route::post('/repuestos',             [RepuestoController::class, 'store'])->name('repuestos.store');
@@ -69,7 +62,6 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/repuestos/{id}',         [RepuestoController::class, 'update'])->name('repuestos.update');
     Route::delete('/repuestos/{id}',      [RepuestoController::class, 'destroy'])->name('repuestos.destroy');
 
-    // Usuarios (Administración)
     Route::get('/usuarios',              [UsuarioController::class, 'index'])->name('usuarios.index');
     Route::get('/usuarios/crear',        [UsuarioController::class, 'create'])->name('usuarios.create');
     Route::post('/usuarios',             [UsuarioController::class, 'store'])->name('usuarios.store');
@@ -77,43 +69,16 @@ Route::middleware('auth.usuario')->group(function () {
     Route::put('/usuarios/{id}',         [UsuarioController::class, 'update'])->name('usuarios.update');
     Route::delete('/usuarios/{id}',      [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
-    // Reportes
     Route::get('/reportes',              [ReporteController::class, 'index'])->name('reportes.index');
     Route::get('/reportes/reparaciones', [ReporteController::class, 'reparaciones'])->name('reportes.reparaciones');
     Route::get('/reportes/diagnosticos', [ReporteController::class, 'diagnosticos'])->name('reportes.diagnosticos');
 
-});
+    // Sucursales (ubicación del taller)
+    Route::get('/sucursales',              [SucursalController::class, 'index'])->name('sucursales.index');
+    Route::get('/sucursales/crear',        [SucursalController::class, 'create'])->name('sucursales.create');
+    Route::post('/sucursales',             [SucursalController::class, 'store'])->name('sucursales.store');
+    Route::get('/sucursales/{id}/editar',  [SucursalController::class, 'edit'])->name('sucursales.edit');
+    Route::put('/sucursales/{id}',         [SucursalController::class, 'update'])->name('sucursales.update');
+    Route::delete('/sucursales/{id}',      [SucursalController::class, 'destroy'])->name('sucursales.destroy');
 
-
-Route::get('/resembrar-2026', function () {
-    $resultado = [];
-
-    try {
-        Artisan::call('migrate:fresh', ['--force' => true]);
-        $resultado[] = "✅ Base de datos reiniciada (migrate:fresh).";
-    } catch (\Throwable $e) {
-        return '<pre>❌ Error en migrate:fresh: ' . $e->getMessage() . '</pre>';
-    }
-
-    $seeders = [
-        'OrdenesCatalogoSeeder',
-        'VehiculoCatalogoSeeder',
-        'ClienteSeeder',
-        'VehiculoSeeder',
-        'OrdenTrabajoSeeder',
-    ];
-
-    foreach ($seeders as $seeder) {
-        try {
-            Artisan::call('db:seed', ['--class' => $seeder, '--force' => true]);
-            $resultado[] = "✅ $seeder ejecutado correctamente.";
-        } catch (\Throwable $e) {
-            $resultado[] = "❌ $seeder falló: " . $e->getMessage();
-        }
-    }
-
-    return '<pre style="font-family: monospace; font-size: 16px;">' .
-        implode("\n", $resultado) .
-        "\n\n⚠️ IMPORTANTE: borra esta ruta de routes/web.php ahora que ya la usaste." .
-        '</pre>';
 });
